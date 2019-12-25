@@ -1,0 +1,20 @@
+CHParams:
+    member_size: 3
+CommonParams:
+    attributes: 3
+    datasize: 600
+Performance:
+    ACC: 0.996
+    FN: 2
+    FP: 0
+    FPR: 0
+    Kappa: 0
+    P: 1.0
+    TN: 0
+    TP: 498
+    TPR: 0.996
+SNParams:
+    buffer_size: 100
+    sample_size_rate: 0.2
+    sqrt_thres: 0.4
+    store_pro: 5.0

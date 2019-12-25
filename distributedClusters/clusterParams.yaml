@@ -1,0 +1,15 @@
+# List of encoders and their parameters.
+ClusterParams:
+  clusters: 5
+  datasize: 100
+  dataThresRate: 0.1 
+Performace:
+  TN: 0
+  FN: 0
+  FP: 0
+  TP: 0
+  ACC: 0
+  FPR: 0
+  TPR: 0
+  P: 0
+

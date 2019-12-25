@@ -1,0 +1,96 @@
+# List of encoders and their parameters.
+CHParams:
+  member_size: 3
+SNParams:
+  buffer_size: 300 #300 400 500 2000
+  store_pro: 0.8    # 0.80, 0.81,...,0.99
+  sample_size_rate: 0.3  #
+  sqrt_thres: 2   #0.51  0.52 ...1 
+CommonParams:
+  datasize: 6000
+  attributes: 3
+  pos_buffer_size: 10
+  statistic_analysis_data_size: 10
+  repeat_time: 1
+  anomalyRate: 0.05
+Presition:
+  temperature: 0.25  #0.5
+  humidity: 1.75      #3.5
+  voltage:  0.1
+
+datafile:
+  E0: #intel
+    data1: "datasets/E0/node43.csv"
+    data2: "datasets/E0/node44.csv"
+    data3: "datasets/E0/node45.csv"
+  E1:
+    data1: "datasets/E1/node21.csv"
+    data2: "datasets/E1/node22.csv"
+    data3: "datasets/E1/node26.csv"
+  E2:
+    data1: "datasets/E2/node4.csv"
+    data2: "datasets/E2/node7.csv"
+    data3: "datasets/E2/node10.csv"
+
+  E3: #sensorscope
+    data1: "datasets/E3/node4.csv"
+    data2: "datasets/E3/node7.csv"
+    data3: "datasets/E3/node10.csv"
+  E4:
+    data1: "datasets/E4/node4.csv"
+    data2: "datasets/E4/node7.csv"
+    data3: "datasets/E4/node10.csv"
+  E5:
+    data1: "datasets/node4.csv"
+    data2: "datasets/node7.csv"
+    data3: "datasets/node10.csv"
+  #JNSN
+outputFile:
+  E0: "datasets/E0/E0_output.csv"
+   
+  E1: "datasets/E1/E1_output.csv"
+  E2: "datasets/E2/E2_output.csv"
+
+  E3: "datasets/E3/E3_output.csv"
+  E4: "datasets/E4/E4_output.csv"
+  E5: "datasets/E5/E5_output.csv"
+  
+anomaly_type:
+  normal:
+    type1: []
+  outlier: 
+    type1: [0]
+    type2: [1]
+    type3: [2]
+    type4: [0,1]
+    type5: [0,2]
+    type6: [1,2]
+    type7: [0,1,2]
+  constant:
+    type1: [0]
+    type2: [1]
+    type3: [2]
+    type4: [0,1]
+    type5: [0,2]
+    type6: [1,2]
+    type7: [0,1,2]
+  noise:
+    type1: [0]
+    type2: [1]
+    type3: [2]
+    type4: [0,1]
+    type5: [0,2]
+    type6: [1,2]
+    type7: [0,1,2]
+Performance:
+  TN: 0
+  FN: 0
+  FP: 0
+  TP: 0
+  ACC: 0
+  FPR: 0
+  TPR: 0
+  P: 0
+  Kappa: 0 
+  
+  
