@@ -2,16 +2,16 @@
 CHParams:
   member_size: 3
 SNParams:
-  buffer_size: 300 #300 400 500 2000
+  buffer_size: 100 #300 400 500 2000
   store_pro: 0.8    # 0.80, 0.81,...,0.99
   sample_size_rate: 0.3  #
   sqrt_thres: 2   #0.51  0.52 ...1 
 CommonParams:
-  datasize: 6000
+  datasize: 200
   attributes: 3
   pos_buffer_size: 10
   statistic_analysis_data_size: 10
-  repeat_time: 1
+  repeat_time: 10
   anomalyRate: 0.05
 Presition:
   temperature: 0.25  #0.5
