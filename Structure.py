@@ -79,7 +79,9 @@ CH_configure_type = ['NT_g','NH_g','NV_g',
 #                     'VoltageMaxNorm_g','VoltageMinNorm_g',
                     #'N',
                      #'H_MIN',
+                     'side_t','side_h','side_v',
                      'H_MAX',
+                     
                      'Vol','B','C']
                      #,'D']  #HyperGrid网络信息
 CH_configure_DF = pd.DataFrame(columns = CH_configure_type) 
@@ -95,7 +97,9 @@ CH_configure_DF['std_T'] = CH_configure_DF['std_T'].astype('float32')
 CH_configure_DF['std_H'] = CH_configure_DF['std_H'].astype('float32')
 CH_configure_DF['std_V'] = CH_configure_DF['std_V'].astype('float32')
 ##
-
+CH_configure_DF['side_t'] = CH_configure_DF['side_t'].astype('float32')  # 差距
+CH_configure_DF['side_h'] = CH_configure_DF['side_h'].astype('float32')
+CH_configure_DF['side_v'] = CH_configure_DF['side_v'].astype('float32')
 # CH_configure_DF['TemperatureMaxNorm_g'] = CH_configure_DF['TemperatureMaxNorm_g'].astype('float32')
 # CH_configure_DF['TemperatureMinNorm_g'] = CH_configure_DF['TemperatureMinNorm_g'].astype('float32')
 # CH_configure_DF['HumidityMaxNorm_g'] = CH_configure_DF['HumidityMaxNorm_g'].astype('float32')
