@@ -25,9 +25,10 @@ def insert_outlier_error(df,type_l,start,size):
 #df, start, size, error_type, type_l, delta_mean = 2, delta_std_times = 1.5):
 def insert_constant_error(df,type_l,start,size,period = 30):
     #size num = constant
-    periodSize = int(len(df-start)/period)
-    assert(periodSize > size), "datasize is to small"
-    insert_index = random.sample(range(1,periodSize-1),size) #从dataframe数据中，提取异常插入的序列
+    periodSize = (int)((df.shape[0]-start)/period)
+    sample_size = (int)(size/period)
+    assert(periodSize > sample_size), "datasize is to small"
+    insert_index = random.sample(range(1,periodSize-1),sample_size) #从dataframe数据中，提取异常插入的序列
     insert_list = []
    
     if len(type_l) == 0:
@@ -97,7 +98,7 @@ def insert_anomaly(df, start, size, error_type, type_l, delta_mean = 2, delta_st
     delta_mean: default 2 for noise anomaly insert [mean+delta]
     delta_std_times: default 2 for noise anomaly [insert std*times]
     '''
-    assert (error_type in ['outlier','constant','noise']), 'wrong error_type'
+    assert (error_type in ['outlier','constant','noise','normal']), 'wrong error_type'
     insert_list = []
     if error_type == 'outlier':
         df,insert_list = insert_outlier_error(df,type_l,start,size)
@@ -106,6 +107,8 @@ def insert_anomaly(df, start, size, error_type, type_l, delta_mean = 2, delta_st
     elif error_type == 'noise':
         #insert_noise_error(df,type_l,start,size,delta_mean,delta_std_times)
         df,insert_list = insert_noise_error(df,type_l,start,size,delta_mean,delta_std_times)
+    elif error_type == 'normal':
+        pass
     else:
         print('error error_type')
     return df,insert_list 
