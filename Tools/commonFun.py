@@ -32,9 +32,27 @@ def decoderPos(pos,attributes,bits):
         arr[i] = pos%divid
         pos = pos//divid
     arr = arr[::-1]
-    
-    
     return arr
+
+def getChebyshevDis(pos_arr1,pos_arr2): 
+   # find the max pos deta
+    assert len(pos_arr1)==len(pos_arr2), "data does not has same size"
+    ChebyshevDistance = abs(pos_arr1[0]-pos_arr2[0])
+    for i in range(1,len(pos_arr1)):
+        temp = abs(pos_arr1[i]-pos_arr2[i])
+        if temp > ChebyshevDistance:
+            ChebyshevDistance = temp
+    return ChebyshevDistance
+
+def isFODError(pos_arr1,pos_arr2,thres = [3,3,3]):
+    isError_ = []
+    assert len(pos_arr1)==len(pos_arr2),"two array has different size"
+    for i in range(len(pos_arr1)):
+        if abs(pos_arr1[i]-pos_arr[i]) > thres[i]:
+            isError_.append(False)
+        else:
+            isError_.append(True)
+    return isError_
 def getChebyshevDistance(pos1,pos2,attributes,b): 
     pos_array1 = decoderPos(pos1,attributes,b)
     pos_array2 = decoderPos(pos2,attributes,b)
@@ -59,6 +77,9 @@ def getMaxChebyshevDistance_index(pos_arr,pos,attributes,b):
     print('max_index',maxIndex)
     print('max_pos',pos_arr[maxIndex])
     return maxIndex
+
+
+
 
 if __name__ == "__main__":
     '''
