@@ -4,6 +4,8 @@ import pandas as pd
 import time
 import matplotlib.pyplot as plt
 import InsertNoise
+
+
 ##############################################################################
 # KitNET is a lightweight online anomaly detection algorithm based on an ensemble of autoencoders.
 # For more information and citation, please see our NDSS'18 paper: Kitsune: An Ensemble of Autoencoders for Online Network Intrusion Detection
@@ -27,13 +29,13 @@ print("Reading Sample dataset...")
 '''
 # KitNET params:
 maxAE = 10  #maximum size for any autoencoder in the ensemble layer
-FMgrace = 0 #the number of instances taken to learn the feature mapping (the ensemble's architecture)
-ADgrace = 4000 #the number of instances used to train the anomaly detector (ensemble itself)
+FMgrace = 5000 #the number of instances taken to learn the feature mapping (the ensemble's architecture)
+ADgrace = 5000 #the number of instances used to train the anomaly detector (ensemble itself)
 
 # load data
 X = pd.read_csv("KitNET/node43.csv",header=None) #an m-by-n dataset with m observations
-X = X[0:10000].copy()
-X,outlier_pos1  = InsertNoise.insert_noise_error(X,[0],ADgrace,1000,0.5,1.5)
+X = X[0:16000].copy()
+X,outlier_pos1  = InsertNoise.insert_noise_error(X,[0],FMgrace+ADgrace,300,0.5,1.5)
 
 
 
@@ -51,19 +53,36 @@ for i in range(X.shape[0]):
     if i % 1000 == 0:
         print(i)
     RMSEs[i] = K.process(X.loc[i]) #will train during the grace periods, then execute on all the rest.
+
+
+data_ = pd.DataFrame(RMSEs)
+data_.to_csv('RMSEs.csv')
+
+
+data_ = pd.DataFrame(np.array(outlier_pos1))
+data_.to_csv('outlier_pos1.csv')
+
 stop = time.time()
 print("Complete. Time elapsed: "+ str(stop - start))
-x = [i for i in range(len(RMSEs)-ADgrace)]
-plt.plot(x,RMSEs[ADgrace:len(RMSEs)])
+x = [i for i in range(len(RMSEs)-ADgrace-FMgrace)]
+# RMES> 0.3
+for i in range(len(x)):
+    if i in outlier_pos1:
+        plt.plot(x[i],RMSEs[ADgrace+FMgrace+i],c='r')
+    else:
+        plt.plot(x[i],RMSEs[ADgrace+FMgrace+i])
 plt.show()
 
 # Here we demonstrate how one can fit the RMSE scores to a log-normal distribution (useful for finding/setting a cutoff threshold \phi)
-
+'''
 from scipy.stats import norm
-beginSample = np.log(RMSEs[ADgrace:len(RMSEs)])
-logProbs = norm.logsf(np.log(RMSEs), np.mean(beginSample), np.std(beginSample))
+beginSample = np.log(RMSEs[FMgrace+ADgrace:])
+logProbs = norm.logsf(np.log(RMSEs[FMgrace+ADgrace:]), np.mean(beginSample), np.std(beginSample))
 
-fig = plt.scatter(x,RMSEs[FMgrace+ADgrace:],s=0.1,c=logProbs[FMgrace+ADgrace+1:],cmap='RdYlGn')
+plt.plot(x,logProbs)
+plt.show()
+'''
+#fig = plt.scatter(x,RMSEs[FMgrace+ADgrace:],s=0.1,c=logProbs[FMgrace+ADgrace+1:],cmap='RdYlGn')
 
 
 # plot the RMSE anomaly scores
