@@ -95,6 +95,8 @@ def get_Normal_Profile(df,H):################
     templist.append(np.sqrt(temp_var_H))     #7
     templist.append(np.sqrt(temp_var_V))     #8
 
+
+
     #4、各属性 簇内最大值，最小值,先做均值为0，方差为1的预处理
     '''4.15改
     templist.append((df['TemperatureMax'].max()-templist[3])/templist[6])  #9 normalized val 
@@ -122,14 +124,17 @@ def get_Normal_Profile(df,H):################
     #H_l,H_h = get_HG_H(Structure.dimensions,Structure.point_size)
     H_h = H
 #     templist.append(H_l)  #15 hyper grid h值
-    templist.append(H_h)  #9
+    
     side_t = math.ceil((temp_max_norm-temp_min_norm)/H_h)
     side_h = math.ceil((humi_max_norm-humi_min_norm)/H_h)
     side_v = math.ceil((volt_max_norm-volt_min_norm)/H_h)
     vol = side_t*side_h * side_v
     #print('side t= %d h= %d v= %d' %(side_t,side_h,side_v))
     #print('vol',vol)
-    
+    templist.append(side_t)     
+    templist.append(side_h)    
+    templist.append(side_v)
+    templist.append(H_h)  #9
     templist.append(vol)  #10
     #B,C = hypergrid_structure_B_C(gf,H_h)
     #求解 B、C 
@@ -960,6 +965,7 @@ def onePoint_detect(pos_all,num_all,k,np_,temp,humi,volt,row):
     sum_ = 0
     #num_in_hypergrid = 0    #记录本单元格数据量
     num_in_l1hyperGrid = 0  
+    #total_num = 0
 #     print('pos',pos)
 #     print('HyperGrid .........')
     #0、检测所在超立方体数据量
@@ -986,13 +992,92 @@ def onePoint_detect(pos_all,num_all,k,np_,temp,humi,volt,row):
         if simple_pos in pos_all:         #判断是否在数组中
             L1_simple_num += num_all[pos_all.index(simple_pos)]  #累计l1-简化域的数据量           
             sum_ += num_all[pos_all.index(simple_pos)]           #累计当前遍历超立方体的数据量
+            #total_num += num_all[pos_all.index(simple_pos)] 
             if simple_pos != pos:
                 num_in_l1hyperGrid += num_all[pos_all.index(simple_pos)] 
             if sum_ > k:       #如果超过阈值，则返回True 退出
 #                 print('in L1_simple_area is normal num = %d' %sum_)
 #                 return True,test_cell_num,maha_now,pos,data_exceed_3std
-                return True,test_cell_num,maha_now,pos,num_in_l1hyperGrid
+                return True,test_cell_num,maha_now,pos,num_in_l1hyperGrid,sum_
             
+#     print('L1_remaining .........')
+    #3、数据量未超过阈值，判断L1-余下邻域
+    '''191218 余下不检验
+    L1_remaining_num = 0
+    L1_remaining_area = get_L1_remaining(L1_simple_area,np_.at[0,'B'],pos)
+    #     print('L1_remaining_area',L1_remaining_area)
+    
+    for remain_pos in L1_remaining_area:
+    #         print('remain_pos',remain_pos)
+        test_cell_num +=1                   #检测单元格数+1
+        if remain_pos in pos_all:              #缺少判断
+            L1_remaining_num +=  num_all[pos_all.index(remain_pos)]
+            sum_ += num_all[pos_all.index(remain_pos)] 
+            if sum_ > k:                    #如果超过阈值，则返回True 退出
+    #                 print('in L1_remaining_area is normal num = %d' %sum_)
+                return True,test_cell_num,maha_now,pos,sum_#,data_exceed_3std   #如果超过阈值，则返回True 退出   
+    #4end 数据量仍然小于K 则返回false
+   '''
+#     print('Sample an error data')
+#     return False,test_cell_num,maha_now,pos,data_exceed_3std
+    return False,test_cell_num,maha_now,pos,num_in_l1hyperGrid,sum_
+
+
+def onePoint_detect_allL1(pos_all,num_all,k,np_,temp,humi,volt,row):
+    #if row >537:
+    #    print('debug')
+    #检测单元格数量
+    test_cell_num = 0 
+    #数值
+#     data_exceed_3std = False
+    
+    temp_norm,humi_norm,volt_norm = onedata_norm(np_,temp,humi,volt)       #提取温湿度信息
+#     if np.abs(temp_norm) >= 3 or np.abs(humi_norm) >= 3 or np.abs(volt_norm) >= 3:
+#         data_exceed_3std = True
+#         print('discover normed data exceed 3',temp_norm,humi_norm,volt_norm)
+    pos,maha_now = get_mapPos(np_,temp_norm,humi_norm,volt_norm)                    #获取映射点信息
+    #统计邻域数据量
+    sum_ = 0
+    #num_in_hypergrid = 0    #记录本单元格数据量
+    num_in_l1hyperGrid = 0  
+    #total_num = 0
+#     print('pos',pos)
+#     print('HyperGrid .........')
+    #0、检测所在超立方体数据量
+    '''
+    if pos in pos_all:   #检测异常                         #判断数据所在单元格是否已经存在pos_all中
+        num_in_hypergrid = num_all[pos_all.index(pos)]
+        test_cell_num +=1                        #检测自身所在单元格
+        if num_in_hypergrid > k:
+#             print('in HyperGrid is normal num = %d' %num_in_hypergrid)
+            return True,test_cell_num,maha_now,pos,num_in_hypergrid#,data_exceed_3std           #如果超过阈值，则返回True 退出
+    sum_+= num_in_hypergrid                       #记录单元格数量
+    '''
+    #1、判断L1-简化邻域 1221 l1 优化领域包含自身
+#     print('L1_simple .........')
+    #L1_simple_num = 0                                                     #保存简化领域的数据量
+    arr = np.array([temp_norm,humi_norm,volt_norm])                       #将标准化的数据，整合和矩阵
+#     print(arr)
+    #L1_simple_area  = get_L1_simple(arr,np_.at[0,'C'],np_.at[0,'B'],pos)  #获取邻域的坐标值
+    L1_simple_area = get_L1_Optimizing(arr,np_.at[0,'C'],np_.at[0,'B'],pos)
+#     print('L1_simple_area',L1_simple_area)
+#     print('L1_simple_area',L1_simple_area)
+    for simple_pos in L1_simple_area:     #逐个取简化领域的数据点
+        test_cell_num +=1  #检测单元格数+1
+        if simple_pos in pos_all:         #判断是否在数组中
+            #L1_simple_num += num_all[pos_all.index(simple_pos)]  #累计l1-简化域的数据量           
+            sum_ += num_all[pos_all.index(simple_pos)]           #累计当前遍历超立方体的数据量
+            #total_num += num_all[pos_all.index(simple_pos)] 
+            if simple_pos != pos:
+                num_in_l1hyperGrid += num_all[pos_all.index(simple_pos)] 
+    if sum_ > k:       #如果超过阈值，则返回True 退出
+#                 print('in L1_simple_area is normal num = %d' %sum_)
+#                 return True,test_cell_num,maha_now,pos,data_exceed_3std
+        return True,test_cell_num,maha_now,pos,num_in_l1hyperGrid,sum_
+    else:
+        return False,test_cell_num,maha_now,pos,num_in_l1hyperGrid,sum_
+
+      
 #     print('L1_remaining .........')
     #3、数据量未超过阈值，判断L1-余下邻域
     '''191218 余下不检验
@@ -1011,9 +1096,7 @@ def onePoint_detect(pos_all,num_all,k,np_,temp,humi,volt,row):
                 return True,test_cell_num,maha_now,pos,sum_#,data_exceed_3std   #如果超过阈值，则返回True 退出   
     #4end 数据量仍然小于K 则返回false
    '''
-#     print('Sample an error data')
-#     return False,test_cell_num,maha_now,pos,data_exceed_3std
-    return False,test_cell_num,maha_now,pos,num_in_l1hyperGrid
+
 def update_k(df,gf,hg,np_val,np_num,pos_local,index_list):
     ##MHs 先分布式计算k*，CH 在求平均
     e_t = -2
