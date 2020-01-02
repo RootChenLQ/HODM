@@ -9,11 +9,8 @@ import yaml
 import Fun
 from scipy import stats
 from sklearn import preprocessing
-import time
 def run(fileNo):
     exp_str = 'E'+str(fileNo)
-    Output_DF = Structure.Output_DF.copy() 
-    Output_DF.to_csv('LOF'+exp_str+'.csv',header=0,mode='a')
     #加载实验参数
     times = 0
     update_times = 0
@@ -32,7 +29,7 @@ def run(fileNo):
     #common
     attributes = modelParams['CommonParams']['attributes']  # 3
     anomalyRate = (float) (modelParams['CommonParams']['anomalyRate']) 
-    anomalyRate = 0.05
+    anomalyRate = 0.01
     continueErrorThres = modelParams['CommonParams']['continueErrorThres'] 
     #pos_buffer_size = modelParams['CommonParams']['pos_buffer_size']  #
     datasize = modelParams['CommonParams']['datasize']
@@ -76,9 +73,8 @@ def run(fileNo):
             #anomaly type normal outlier constant noise
             for subtype in anomalyType[typeName]:
                 #anomaly type [0,1,2]
-                timestamp = time.time()
                 type =  anomalyType[typeName][subtype]  # 加载异常
-                #typeName = 'constant'
+                #typeName = 'noise'
                 #type = [0]
                 #获取数据，插入异常
                 print(typeName+subtype)
@@ -100,29 +96,54 @@ def run(fileNo):
                 #LocalOutlierFactor 参数
                 #n_neighbors=20, algorithm=’auto’, leaf_size=30, 
                 #metric=’minkowski’, p=2, metric_params=None, contamination=0.1, n_jobs=1
-                #neighborsSize = [(int)(n) for n in np.linspace(300,400,10)]
-                neighborsSize = [350]
+                clf = LocalOutlierFactor(n_neighbors=100, contamination=anomalyRate)  # 加载LOF分类器
+                y_pred = clf.fit_predict(data1_scale)
+                scores_pred = clf.negative_outlier_factor_
+                #threshold = stats.scoreatpercentile(scores_pred, 100 * anomalyRate)  # 根据异常样本比例，得到阈值，用于绘图
+                thres = np.percentile(scores_pred,100 * anomalyRate)
+                count = 0
+                detected_list = []
+                for i in range(len(scores_pred)):
+                    if scores_pred[i]<=thres:
+                        detected_list.append(i)
+
+                '''
+                for i  in range(len(y_pred)):
+                    if y_pred[i] == -1:
+                        count+=1
+                        detected_list.append(i)
+                '''
+                #print(count)
+                tn,fn,fp,tp, acc,fpr,tpr,p,f1 = Fun.compute_performent(outlier_pos1,detected_list,datasize)
+
+                scores_pred = clf.negative_outlier_factor_
+                threshold = stats.scoreatpercentile(scores_pred, 100 * anomalyRate)  # 根据异常样本比例，得到阈值，用于绘图
                 
-                for n in neighborsSize:
-                    print(n)
-                    clf = LocalOutlierFactor(n_neighbors=n, contamination=anomalyRate)  # 加载LOF分类器
-                    y_pred = clf.fit_predict(data1_scale)
-                    scores_pred = clf.negative_outlier_factor_
-                    #threshold = stats.scoreatpercentile(scores_pred, 100 * anomalyRate)  # 根据异常样本比例，得到阈值，用于绘图
-                    thres = np.percentile(scores_pred,100 * anomalyRate)
-                    count = 0
-                    detected_list = []
-                    for i in range(len(scores_pred)):
-                        if scores_pred[i]<=thres:
-                            detected_list.append(i)
-                    tn,fn,fp,tp, acc,fpr,tpr,p,f1 = Fun.compute_performent(outlier_pos1,detected_list,datasize)
-                s1 = pd.Series([exp_str,i, typeName,type, tn,fn,fp,tp,acc,fpr,tpr,p,f1,update_times,time.time()-timestamp],
-                            index= Structure.Output_DF_Type)
-                Output_DF = Structure.Output_DF.copy() 
-                Output_DF = Output_DF.append(s1,ignore_index = True,sort=False)
-                Output_DF.to_csv('LOF'+exp_str+'.csv',header=0,mode='a')
-        times+=1
+                '''
+                # plot the level sets of the decision function
+                xx, yy = np.meshgrid(np.linspace(-7, 7, 50), np.linspace(-7, 7, 50))
+                Z = clf._decision_function(np.c_[xx.ravel(), yy.ravel()])  # 类似scores_pred的值，值越小越有可能是异常点
+                Z = Z.reshape(xx.shape)
                 
+                plt.title("Local Outlier Factor (LOF)")
+                # plt.contourf(xx, yy, Z, cmap=plt.cm.Blues_r)
+                
+                plt.contourf(xx, yy, Z, levels=np.linspace(Z.min(), threshold, 7), cmap=plt.cm.Blues_r)  # 绘制异常点区域，值从最小的到阈值的那部分
+                a = plt.contour(xx, yy, Z, levels=[threshold], linewidths=2, colors='red')  # 绘制异常点区域和正常点区域的边界
+                plt.contourf(xx, yy, Z, levels=[threshold, Z.max()], colors='palevioletred')  # 绘制正常点区域，值从阈值到最大的那部分
+                
+                b = plt.scatter(X_train[:-n_outliers, 0], X_train[:-n_outliers, 1], c='white',
+                                    s=20, edgecolor='k')
+                c = plt.scatter(X_train[-n_outliers:, 0], X_train[-n_outliers:, 1], c='black',
+                                    s=20, edgecolor='k')
+                plt.axis('tight')
+                plt.xlim((-7, 7))
+                plt.ylim((-7, 7))
+                plt.legend([a.collections[0], b, c],
+                        ['learned decision function', 'true inliers', 'true outliers'],
+                        loc="upper left")
+                plt.show()
+                '''
 
 if __name__ == "__main__":
     for i in range(3):
