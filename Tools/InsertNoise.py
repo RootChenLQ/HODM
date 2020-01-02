@@ -12,9 +12,10 @@ def insert_outlier_error(df,type_l,start,size):
     else:
         for val in insert_list:
             for index in type_l:
-                if np.random.random()>0.2: #outlier
-                    df.iloc[val,index] = df.iloc[val,index] + random.randint(20,30)
-                else: #contexual outlier
+                if np.random.random()>0: #outlier
+                    #df.iloc[val,index] = df.iloc[val,index] + random.randint(10,30)
+                    df.iloc[val,index] = df.iloc[val,index] + random.randint(10,100)
+                else: #contexual outlier 0
                     df.iloc[val,index] = df.iloc[(val+1000)%len(df),index] 
         #df['Temperature'].plot()
         insert_list = np.sort(insert_list)
@@ -23,27 +24,34 @@ def insert_outlier_error(df,type_l,start,size):
 
 #fun2 constant anomaly
 #df, start, size, error_type, type_l, delta_mean = 2, delta_std_times = 1.5):
-def insert_constant_error(df,type_l,start,size,period = 30):
+def insert_constant_error(df,type_l,start,size,period = 20):
     #size num = constant
-    periodSize = int(len(df-start)/period)
-    assert(periodSize > size), "datasize is to small"
-    insert_index = random.sample(range(1,periodSize-1),size) #从dataframe数据中，提取异常插入的序列
+    periodSize = (int)((df.shape[0]-start)/period)
+    sample_size = (int)(size/period)
+    assert(periodSize > sample_size), "datasize is to small"
+    insert_index = random.sample(range(1,periodSize),sample_size) #从dataframe数据中，提取异常插入的序列
     insert_list = []
-   
+    for val in insert_index:
+        s_ = val*period + start
+        temp_l = [pos for pos in range(s_,s_+period)]
+        insert_list += temp_l
+    insert_list = np.unique(insert_list)
+
     if len(type_l) == 0:
         insert_list = [] 
     else:
         for index in type_l:
             #insert_list = random.sample(range(start,len(df)-period),size) #从dataframe数据中，提取异常插入的序列   
-            for val in insert_index:
-                s_ = val*period + start
-                df.iloc[s_:s_+period,index] = 100
+            const_val = np.random.randint(80,100)
+            for row in insert_list:
+                #s_ = val*period + start
+                df.iloc[row,index] = const_val
                 #insert_list.append([pos in range(s_:s_+period)])
-                temp_l = [pos for pos in range(s_,s_+period)]
-                insert_list += temp_l
+                #temp_l = [pos for pos in range(s_,s_+period)]
+                #insert_list += temp_l
             #insert_list.append(range(val,val+period)) 
         #df['Temperature'].plot()
-        insert_list = np.sort(insert_list)
+        #insert_list = np.sort(insert_list)
     return df,insert_list
 
 
@@ -97,7 +105,7 @@ def insert_anomaly(df, start, size, error_type, type_l, delta_mean = 2, delta_st
     delta_mean: default 2 for noise anomaly insert [mean+delta]
     delta_std_times: default 2 for noise anomaly [insert std*times]
     '''
-    assert (error_type in ['outlier','constant','noise']), 'wrong error_type'
+    assert (error_type in ['outlier','constant','noise','normal']), 'wrong error_type'
     insert_list = []
     if error_type == 'outlier':
         df,insert_list = insert_outlier_error(df,type_l,start,size)
@@ -106,8 +114,8 @@ def insert_anomaly(df, start, size, error_type, type_l, delta_mean = 2, delta_st
     elif error_type == 'noise':
         #insert_noise_error(df,type_l,start,size,delta_mean,delta_std_times)
         df,insert_list = insert_noise_error(df,type_l,start,size,delta_mean,delta_std_times)
-    else:
-        print('error error_type')
+    elif error_type == 'normal':
+        pass
     return df,insert_list 
 
 
