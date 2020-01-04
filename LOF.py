@@ -36,11 +36,11 @@ def run(fileNo):
     continueErrorThres = modelParams['CommonParams']['continueErrorThres'] 
     #pos_buffer_size = modelParams['CommonParams']['pos_buffer_size']  #
     datasize = modelParams['CommonParams']['datasize']
-    datasize = 6000
+    datasize = 30000
     statistic_analysis_data_size = modelParams['CommonParams']['statistic_analysis_data_size']   
     # MN
     bufferSize = modelParams['SNParams']['buffer_size']  #4.23 
-    #bufferSize = 2000
+    bufferSize = 2000
     #sqrt_thres = modelParams['SNParams']['sqrt_thres']
     store_pro = modelParams['SNParams']['store_pro']
     sampleforK = (int)(modelParams['SNParams']['sample_size_rate']*bufferSize)
@@ -78,8 +78,8 @@ def run(fileNo):
                 #anomaly type [0,1,2]
                 timestamp = time.time()
                 type =  anomalyType[typeName][subtype]  # 加载异常
-                #typeName = 'constant'
-                #type = [0]
+                typeName = 'normal'
+                type = []
                 #获取数据，插入异常
                 print(typeName+subtype)
                 begin_ = 2000
@@ -93,28 +93,37 @@ def run(fileNo):
                 data1,outlier_pos1  = insert_anomaly(data1, 0, anomaly_num, typeName, 
                                                         type, delta_mean = 0.5, delta_std_times = 1.5)
 
-                data1_scale = preprocessing.scale(data1)
-                
-                np.savetxt('lof.csv',data1_scale)
+                #data1_scale = preprocessing.scale(data1)
+                #np.savetxt('lof.csv',data1_scale)
                 # fit the model
                 #LocalOutlierFactor 参数
                 #n_neighbors=20, algorithm=’auto’, leaf_size=30, 
                 #metric=’minkowski’, p=2, metric_params=None, contamination=0.1, n_jobs=1
                 #neighborsSize = [(int)(n) for n in np.linspace(300,400,10)]
-                neighborsSize = [350]
-                
+                #neighborsSize = [(int)(n) for n in np.linspace(100,200,20)]
+                neighborsSize = [120] #>5%
                 for n in neighborsSize:
                     print(n)
-                    clf = LocalOutlierFactor(n_neighbors=n, contamination=anomalyRate)  # 加载LOF分类器
-                    y_pred = clf.fit_predict(data1_scale)
-                    scores_pred = clf.negative_outlier_factor_
-                    #threshold = stats.scoreatpercentile(scores_pred, 100 * anomalyRate)  # 根据异常样本比例，得到阈值，用于绘图
-                    thres = np.percentile(scores_pred,100 * anomalyRate)
-                    count = 0
                     detected_list = []
-                    for i in range(len(scores_pred)):
-                        if scores_pred[i]<=thres:
-                            detected_list.append(i)
+                    for batch in range((int)(len(data1)/bufferSize)):
+                        data1_batch = data1[batch*bufferSize:(batch+1)*bufferSize].copy()
+                        #data1_scale = preprocessing.scale(data1_batch)
+                        #clf = LocalOutlierFactor(n_neighbors=n, contamination=anomalyRate)  # 加载LOF分类器
+                        clf = LocalOutlierFactor(n_neighbors=n)
+                        y_pred = clf.fit_predict(data1_batch)
+                        '''
+                        for i in range(len(y_pred)):
+                            if y_pred[i] > 2:
+                                print(i+batch*bufferSize)
+                        '''
+                        scores_pred = clf.negative_outlier_factor_
+                        #threshold = stats.scoreatpercentile(scores_pred, 100 * anomalyRate)  # 根据异常样本比例，得到阈值，用于绘图
+                        thres = np.percentile(scores_pred,100 * anomalyRate)
+                        count = 0
+                        for i in range(len(scores_pred)):
+                            if scores_pred[i]<=-1.8:
+                                detected_list.append(batch*bufferSize+i)
+
                     tn,fn,fp,tp, acc,fpr,tpr,p,f1 = Fun.compute_performent(outlier_pos1,detected_list,datasize)
                 s1 = pd.Series([exp_str,i, typeName,type, tn,fn,fp,tp,acc,fpr,tpr,p,f1,update_times,time.time()-timestamp],
                             index= Structure.Output_DF_Type)
