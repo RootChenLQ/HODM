@@ -4,7 +4,29 @@ import pandas as pd
 import time
 import matplotlib.pyplot as plt
 import InsertNoise
+import os
+import sys
 
+#sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".."))+"Tools")
+sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
+import Fun
+import Tools.InsertNoise
+
+
+'''
+import os
+print '***获取当前目录***'
+print os.getcwd()
+print os.path.abspath(os.path.dirname(__file__))
+# __file__ 为当前文件, 若果在ide中运行此行会报错,可改为 #d = path.dirname('.') 
+# 但是改为.后，就是获得当前目录，接着使用dirname函数访问上级目录
+print '***获取上级目录***'
+print os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+print os.path.abspath(os.path.dirname(os.getcwd()))
+print os.path.abspath(os.path.join(os.getcwd(), ".."))
+print '***获取上上级目录***'
+print os.path.abspath(os.path.join(os.getcwd(), "../.."))
+'''
 
 ##############################################################################
 # KitNET is a lightweight online anomaly detection algorithm based on an ensemble of autoencoders.
@@ -29,15 +51,23 @@ print("Reading Sample dataset...")
 '''
 # KitNET params:
 maxAE = 10  #maximum size for any autoencoder in the ensemble layer
-FMgrace = 5000 #the number of instances taken to learn the feature mapping (the ensemble's architecture)
+FMgrace = 1000 #the number of instances taken to learn the feature mapping (the ensemble's architecture)
 ADgrace = 5000 #the number of instances used to train the anomaly detector (ensemble itself)
 
 # load data
-X = pd.read_csv("KitNET/node43.csv",header=None) #an m-by-n dataset with m observations
-X = X[0:16000].copy()
-X,outlier_pos1  = InsertNoise.insert_noise_error(X,[0],FMgrace+ADgrace,300,0.5,1.5)
+X = pd.read_csv("datasets/E0/node43.csv",header=None) #an m-by-n dataset with m observations
+X = X[0:30000].copy()
+testDataSize = X.shape[0] - ADgrace - FMgrace
+anomalyRate = 0.05
+anomalyDataSize = (int)(testDataSize * anomalyRate)
+#X,outlier_pos1  = InsertNoise.insert_noise_error(X,[0],FMgrace+ADgrace,300,0.5,1.5)
 
-
+X,outlier_pos1 = Tools.InsertNoise.insert_anomaly(X, FMgrace+ADgrace, anomalyDataSize, error_type='constant', type_l=[], delta_mean = 2, delta_std_times = 1.5)
+label = np.zeros(X.shape[0])
+for index in outlier_pos1:
+    label[index] = 1
+#np.to_csv(outlier_pos1,'outlier.csv')
+label.tofile('label.csv')
 
 # Build KitNET
 #(self,n,max_autoencoder_size=10,FM_grace_period=None,AD_grace_period=10000,learning_rate=0.1,hidden_ratio=0.75, feature_map = None):
@@ -45,23 +75,39 @@ K = kit.KitNET(X.shape[1],max_autoencoder_size= 10,FM_grace_period=FMgrace,
                     AD_grace_period=ADgrace,learning_rate=0.1,hidden_ratio=2/3, feature_map = None)
 RMSEs = np.zeros(X.shape[0]) # a place to save the scores
 
+
 print("Running KitNET:")
 start = time.time()
 # Here we process (train/execute) each individual observation.
 # In this way, X is essentially a stream, and each observation is discarded after performing process() method.
 for i in range(X.shape[0]):
-    if i % 1000 == 0:
+    if i % 6000 == 0:
         print(i)
     RMSEs[i] = K.process(X.loc[i]) #will train during the grace periods, then execute on all the rest.
 
 
-data_ = pd.DataFrame(RMSEs)
+
+#detected_l  = [index for index in range(RMSEs.shape[0]) if RMSEs[index]>1 ]
+detected_l = []
+for i in range(RMSEs.shape[0]):
+    if RMSEs[i]>1:
+       detected_l.append(i)
+    
+print(len(outlier_pos1))
+print(len(detected_l))
+
+tn,fn,fp,tp, acc,fpr,tpr,p,f1 = Fun.compute_performent(outlier_pos1,detected_l,testDataSize) 
+                        
+
+outputData = np.vstack((label,RMSEs))
+outputData  = outputData.T
+data_ = pd.DataFrame(outputData)
 data_.to_csv('RMSEs.csv')
 
 
-data_ = pd.DataFrame(np.array(outlier_pos1))
-data_.to_csv('outlier_pos1.csv')
-
+#data_ = pd.DataFrame(np.array(outlier_pos1))
+#data_.to_csv('outlier_pos1.csv')
+'''
 stop = time.time()
 print("Complete. Time elapsed: "+ str(stop - start))
 x = [i for i in range(len(RMSEs)-ADgrace-FMgrace)]
@@ -72,7 +118,7 @@ for i in range(len(x)):
     else:
         plt.plot(x[i],RMSEs[ADgrace+FMgrace+i])
 plt.show()
-
+'''
 # Here we demonstrate how one can fit the RMSE scores to a log-normal distribution (useful for finding/setting a cutoff threshold \phi)
 '''
 from scipy.stats import norm

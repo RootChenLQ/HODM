@@ -25,7 +25,7 @@ class corClust:
         c_rt = x - self.c/self.N
         self.c_r += c_rt
         self.c_rs += c_rt**2
-        self.C += np.outer(c_rt,c_rt)
+        self.C += np.outer(c_rt,c_rt)  #np.outer([1,2,3],[4,5,6]) array([[ 4,  5,  6], [ 8, 10, 12], [12, 15, 18]])
 
     # creates the current correlation distance matrix between the features
     def corrDist(self):
