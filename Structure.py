@@ -141,3 +141,12 @@ QueueBuffer_DF['Voltage'] = QueueBuffer_DF['Voltage'].astype('float32')
 #output structure
 Output_DF_Type = ['Exp','ID','anomalyName','anomalyType','TN','FN','FP','TP','ACC','FPR','TPR','P','F1','Update_times','runtime']
 Output_DF = pd.DataFrame(columns = Output_DF_Type) 
+
+
+#read data type
+Filled_DF_Type = ['Temperature','Humidity','Voltage']
+
+#lstm 
+#Output_DF_Type = ['Exp','ID','anomalyName','anomalyType','TN','FN','FP','TP','ACC','FPR','TPR','P','F1','Update_times','runtime']
+Output_DF_lstm_Type =  ['n_batch','n_in_timestep','n_neurons','error_value','time']
+Output_DF_lstm = pd.DataFrame(columns = Output_DF_lstm_Type) 

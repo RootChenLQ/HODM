@@ -1,0 +1,67 @@
+# List of encoders and their parameters.
+BatchSize: 10
+timesteps: 5
+
+
+datafile:
+  E0: #intel
+    data1: "../datasets/E0/node43.csv"
+    data2: "../datasets/E0/node44.csv"
+    data3: "../datasets/E0/node45.csv"
+  E1:
+    data1: "../datasets/E1/node21.csv"
+    data2: "../datasets/E1/node22.csv"
+    data3: "../datasets/E1/node26.csv"
+  E2:
+    data1: "../datasets/E2/node7.csv"
+    data2: "../datasets/E2/node4.csv"
+    data3: "../datasets/E2/node10.csv"
+
+  E3: #sensorscope
+    data1: "../datasets/E3/sensorscope15_30000.csv"
+    data2: "../datasets/E3/sensorscope12_30000.csv"
+    data3: "../datasets/E3/sensorscope17_30000.csv"
+
+  E4:  #JNSN
+    data1: "../datasets/E4/node28.csv"
+    data2: "../datasets/E4/node22.csv"
+    data3: "../datasets/E4/node29.csv"
+anomaly_type:
+  normal:
+    type1: []
+  outlier: 
+    type1: [0]
+    type2: [1]
+    type3: [2]
+    type4: [0,1]
+    type5: [0,2]
+    type6: [1,2]
+    type7: [0,1,2]
+  constant:
+    type1: [0]
+    type2: [1]
+    type3: [2]
+    type4: [0,1]
+    type5: [0,2]
+    type6: [1,2]
+    type7: [0,1,2]
+  noise:
+    type1: [0]
+    type2: [1]
+    type3: [2]
+    type4: [0,1]
+    type5: [0,2]
+    type6: [1,2]
+    type7: [0,1,2]
+Performance:
+  TN: 0
+  FN: 0
+  FP: 0
+  TP: 0
+  ACC: 0
+  FPR: 0
+  TPR: 0
+  P: 0
+  Kappa: 0 
+  
+  

@@ -14,7 +14,7 @@ def insert_outlier_error(df,type_l,start,size):
             for index in type_l:
                 if np.random.random()>0: #outlier
                     #df.iloc[val,index] = df.iloc[val,index] + random.randint(10,30)
-                    df.iloc[val,index] = df.iloc[val,index] + random.randint(10,100)
+                    df.iloc[val,index] = df.iloc[val,index] + random.randint(10,50)
                 else: #contexual outlier 0
                     df.iloc[val,index] = df.iloc[(val+1000)%len(df),index] 
         #df['Temperature'].plot()

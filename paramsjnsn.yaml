@@ -2,22 +2,22 @@
 CHParams:
   member_size: 3
 SNParams:
-  buffer_size: 3000 #300 400 500 2000
+  buffer_size: 2000 #300 400 500 2000
   store_pro: 0.9    # 0.80, 0.81,...,0.99
   sample_size_rate: 0.3  #
   sqrt_thres: 2   #0.51  0.52 ...1 
 CommonParams:
-  datasize:   9000
+  datasize:   30000
   attributes: 3
   pos_buffer_size: 30
   statistic_analysis_data_size: 20
   repeat_time: 10
-  anomalyRate: 0.05
+  anomalyRate: 0.01
   continueErrorThres: 30
 Presition:
   temperature: 0.5  #0.5
   humidity: 3.5      #3.5
-  voltage:  0.2
+  light:  100
 
 datafile:
   E0: #intel
@@ -34,51 +34,49 @@ datafile:
     data3: "../datasets/E2/node10.csv"
 
   E3: #sensorscope
-    data1: "../datasets/E3/sensorscope12_30000.csv"
-    data2: "../datasets/E3/sensorscope15_30000.csv"
+    data1: "../datasets/E3/sensorscope15_30000.csv"
+    data2: "../datasets/E3/sensorscope12_30000.csv"
     data3: "../datasets/E3/sensorscope17_30000.csv"
 
   E4:  #JNSN
-    data1: "../datasets/E4/node22.csv"
-    data2: "../datasets/E4/node28.csv"
+    data1: "../datasets/E4/node28.csv"
+    data2: "../datasets/E4/node22.csv"
     data3: "../datasets/E4/node29.csv"
   
 outputFile:
   E0: "../datasets/E0/E0_output.csv"
-   
   E1: "../datasets/E1/E1_output.csv"
   E2: "../datasets/E2/E2_output.csv"
-
   E3: "../datasets/E3/E3_output.csv"
   E4: "../datasets/E4/E4_output.csv"
   E5: "../datasets/E5/E5_output.csv"
   
 anomaly_type:
-  #normal:
-    #type1: []
-  outlier: 
-    type1: [0]
-    #type2: [1]
-    #type3: [2]
-    #type4: [0,1]
-    #type5: [0,2]
-    #type6: [1,2]
-    type7: [0,1,2]
+  # normal:
+  #   type1: []
+  # outlier: 
+  #   type1: [0]
+  #   type2: [1]
+  #   type3: [2]
+  #   type4: [0,1]
+  #   type5: [0,2]
+  #   type6: [1,2]
+  #   type7: [0,1,2]
   constant:
     type1: [0]
-    #type2: [1]
-    #type3: [2]
-    #type4: [0,1]
-    #type5: [0,2]
-    #type6: [1,2]
+    # type2: [1]
+    # type3: [2]
+    # type4: [0,1]
+    # type5: [0,2]
+    # type6: [1,2]
     type7: [0,1,2]
   noise:
     type1: [0]
-    #type2: [1]
-    #type3: [2]
-    #type4: [0,1]
-    #type5: [0,2]
-    #type6: [1,2]
+    type2: [1]
+    type3: [2]
+    type4: [0,1]
+    type5: [0,2]
+    type6: [1,2]
     type7: [0,1,2]
 Performance:
   TN: 0
